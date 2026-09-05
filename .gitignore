@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+build/
+dist/
+*.egg-info/
+
+# Frontend
+node_modules/
+
+# Environments / secrets
+.env
+venv/
+.venv/

@@ -4,11 +4,24 @@ __pycache__/
 build/
 dist/
 *.egg-info/
+.pytest_cache/
+ruff_cache/
 
 # Frontend
 node_modules/
+frontend/dist/
 
 # Environments / secrets
 .env
 venv/
 .venv/
+# Temp logs / probe outputs (never commit)
+pip_*.txt
+pytest*.txt
+reinstall*.txt
+http_*.txt
+*_out.txt
+*_err.txt
+ensurepip_log.txt
+procs.txt
+sonics*.txt

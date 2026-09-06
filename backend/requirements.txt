@@ -1,13 +1,18 @@
-fastapi
-uvicorn
-pydantic
-pydantic-settings
-python-dotenv
-instaloader
-httpx
-transformers
-torch
-google-generativeai
-pytest
-python-multipart
+# Core runtime dependencies (mirrors pyproject.toml [project].dependencies)
+fastapi>=0.100.0
+uvicorn>=0.23.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+python-dotenv>=1.0.0
+instaloader>=4.9.0
+httpx>=0.24.0
+
+# Optional extras (see README):
+#   pip install -e ".[gemini]"   -> Google Gemini provider
+#   pip install -e ".[ml]"       -> local transformers ML provider
+#   pip install -e ".[dev]"      -> test tooling
+google-generativeai>=0.7.0 ; extra == "gemini"
+transformers>=4.40.0 ; extra == "ml"
+torch>=2.2.0 ; extra == "ml"
+pytest>=7.4.0 ; extra == "dev"
 

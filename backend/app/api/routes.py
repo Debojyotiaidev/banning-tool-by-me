@@ -18,7 +18,7 @@ from ..models.schemas import (
     SimulationOutput,
 )
 
-router = APIRouter()
+router = APIRouter(prefix="/api")
 
 CATEGORIES = [
     "Spam",
@@ -64,7 +64,7 @@ def _empty_profile(username: str, status: str) -> InstagramProfile:
     )
 
 
-@router.get("/")
+@router.get("")
 def read_root() -> dict:
     return {"message": "Banning Tool API is running"}
 

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,18 +8,21 @@ version = "1.0.0"
 description = "Read-only Instagram AI account analyzer and hypothetical enforcement-prediction simulator"
 readme = "README.md"
 requires-python = ">=3.9"
+license = { text = "MIT" }
 dependencies = [
-    "fastapi",
-    "uvicorn",
-    "pydantic",
-    "pydantic-settings",
-    "python-dotenv",
-    "instaloader",
-    "httpx",
-    "transformers",
-    "torch",
-    "google-generativeai"
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "instaloader>=4.9.0",
+    "httpx>=0.24.0",
 ]
+
+[project.optional-dependencies]
+gemini = ["google-generativeai>=0.7.0"]
+ml = ["transformers>=4.40.0", "torch>=2.2.0"]
+dev = ["pytest>=7.4.0"]
 
 [project.scripts]
 sonics = "app.main:main"
@@ -35,3 +38,15 @@ packages = [
     "app.models",
     "app.simulation",
 ]
+include-package-data = true
+
+[tool.setuptools.package-data]
+app = ["static/**/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+pythonpath = ["backend"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"

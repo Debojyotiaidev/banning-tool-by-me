@@ -30,10 +30,10 @@ class AccountRisk(BaseModel):
     summary: str
 
 class SimulationInput(BaseModel):
-    violation_reports: int = 0
-    spam_reports: int = 0
-    impersonation_reports: int = 0
-    reporting_sources: int = 0
+    violation_reports: int = Field(default=0, ge=0)
+    spam_reports: int = Field(default=0, ge=0)
+    impersonation_reports: int = Field(default=0, ge=0)
+    reporting_sources: int = Field(default=0, ge=0)
 
 class SimulationOutput(BaseModel):
     estimated_likelihood: float

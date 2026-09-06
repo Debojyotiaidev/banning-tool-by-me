@@ -106,6 +106,42 @@ POLICY_CATEGORIES: List[PolicyCategory] = [
 
 POLICY_NAMES: Dict[str, str] = {p.name: p.key for p in POLICY_CATEGORIES}
 
+# Legacy / alias names that appeared in Phase 1 or in older model output.
+# They are normalized into the canonical taxonomy names above so every
+# consumer of the pipeline speaks the same language.
+LEGACY_CATEGORY_NAMES: Dict[str, str] = {
+    "Hate Speech": "Hateful Conduct",
+    "Harassment / Bullying": "Bullying & Harassment",
+    "Harassment & Bullying": "Bullying & Harassment",
+    "Impersonation Risk": "Impersonation",
+    "General Policy Risk": "Other Policy Areas",
+    "Violence/Incitement": "Violence & Incitement",
+    "Fraud/Scams": "Fraud / Scams / Deceptive Practices",
+    "Fraud & Scams": "Fraud / Scams / Deceptive Practices",
+    "Restricted Goods": "Restricted Goods & Services",
+    "Coordinating Crime": "Coordinating Harm / Promoting Crime",
+    "Self Harm": "Suicide & Self-Injury",
+    "Self-Harm": "Suicide & Self-Injury",
+    "Other": "Other Policy Areas",
+}
+
+
+def canonical_category_names() -> List[str]:
+    """Return the canonical policy category names (single source of truth)."""
+    return [p.name for p in POLICY_CATEGORIES]
+
+
+def normalize_category_name(name: str) -> str:
+    """Map a legacy/alias category name into the canonical taxonomy name.
+
+    Returns the input unchanged when it is already canonical or unknown, so
+    callers can safely compare against ``canonical_category_names()``.
+    """
+    raw = (name or "").strip()
+    if raw in POLICY_NAMES:
+        return raw
+    return LEGACY_CATEGORY_NAMES.get(raw, raw)
+
 
 def policy_by_name(name: str) -> Optional[PolicyCategory]:
     """Return the taxonomy entry for an exact category name (or None)."""

@@ -1,186 +1,40 @@
-# Sonics — Instagram AI Account Analyzer & Enforcement Prediction Simulator
+# Sonics — Instagram Policy & Evidence Analyzer
 
-A read-only AI-powered Instagram profile and public-content analysis tool with a hypothetical enforcement prediction simulator.
+A read-only, AI-powered analyzer for **publicly accessible Instagram information**,
+with an **isolated, hypothetical enforcement-prediction simulator**.
 
-- **It analyzes legitimately accessible Instagram information.**
-- **It uses AI to analyze accessible content.**
-- **It provides hypothetical enforcement predictions.**
-- **It does NOT submit reports.**
-- **It does NOT ban accounts.**
-- **It does NOT manipulate Instagram's enforcement system.**
-
----
-
-## 🎬 Demo
-
-Below is an example of the complete application workflow and the type of result users can expect.
-
-> ⚠️ **Important:** `@demo_account` below is a **fictional example account**. All numbers shown are **illustrative only** and are **NOT real Instagram enforcement probabilities**. When you run the application, it analyzes the **actual retrieved data** for whatever account you enter.
-
-### Step 1 — Enter Instagram Account
-
-```text
-Instagram Username / Profile URL
-
-@demo_account
-
-[ Analyze Account ]
-```
-
-### Step 2 — Account Overview
-
-```text
-ACCOUNT OVERVIEW
-
-Username: @demo_account
-Display Name: Demo Account
-Bio: Example profile for demonstration
-Account Status: Public
-
-Followers: 12,481
-Following: 823
-Posts: 147
-
-Accessible Content Analyzed: 25 posts
-```
-
-> Demo values above are illustrative. Real values are retrieved from whatever information is legitimately available through the configured data source. If a field cannot be retrieved, the application returns **"Unavailable"** — it never invents data.
-
-### Step 3 — AI Content Analysis
-
-```text
-CONTENT ANALYSIS
-
-Spam
-Classification: Low Risk
-Confidence: 87%
-Severity: Low
-
-Harassment / Bullying
-Classification: Potential Risk
-Confidence: 72%
-Severity: Medium
-
-Hate Speech
-Classification: No Clear Violation
-Confidence: 91%
-Severity: Low
-
-Impersonation Risk
-Classification: Potential Risk
-Confidence: 68%
-Severity: Medium
-```
-
-> ⚠️ This is ONLY an example UI/result. When the application is running, the AI analyzes the **actual retrieved content** of the account you enter — it does not generate results from the example above.
-
-### Step 4 — Account-Level Analysis
-
-```text
-ACCOUNT RISK SUMMARY
-
-Overall Model Risk: 63%
-
-Accessible Items Analyzed: 25
-
-Primary Signals:
-• Repeated promotional patterns
-• Several potentially abusive interactions
-• Profile characteristics requiring additional review
-
-Model Confidence: 76%
-```
-
-> This is an application-generated risk assessment, **not an official Instagram score**.
+- It analyzes legitimately accessible Instagram information.
+- It uses AI to assess content against a fixed set of policy categories.
+- It includes a purely hypothetical enforcement-prediction simulator.
+- It does **NOT** submit reports, ban accounts, or manipulate Instagram's
+  enforcement system in any way.
 
 ---
 
-## ⚡ Sonics Enforcement Prediction Simulator
-
-The Sonics simulator **does not submit reports and does not ban accounts**. It allows users to experiment with hypothetical reporting variables and produces a **model estimate**.
-
-### Hypothetical Scenario
-
-```text
-HYPOTHETICAL SCENARIO
-
-Violation reports:        5
-Spam reports:             4
-Impersonation reports:    4
-Hypothetical sources:     8
-
-[ Run Simulation ]
-```
-
-### Simulation Result
-
-```text
-SIMULATION RESULT
-
-Estimated Enforcement Likelihood
-87%
-
-Model Confidence
-71%
-
-Uncertainty
-±14%
-
-Result Type
-Hypothetical Model Estimate
-```
-
-> ⚠️ **The 87% above is NOT an actual Instagram probability.** It is an illustrative output from the application's hypothetical model. Instagram does not publicly disclose its enforcement thresholds, and this application never claims that a specific number of reports will ban an account.
-
----
-
-## 🔄 Complete Workflow
-
-1. User enters an Instagram username or profile URL.
-2. The application checks what information is legitimately accessible.
-3. Publicly accessible profile information is collected.
-4. Publicly accessible content is collected where supported.
-5. Content is normalized.
-6. AI analysis agents analyze the retrieved content.
-7. The account-level agent combines the results.
-8. The user opens the Sonics Enforcement Prediction Simulator.
-9. The user enters hypothetical simulation parameters.
-10. The simulator produces an estimated model result.
-11. Results are displayed in the dashboard.
-
-> The same installed application can analyze many different accounts. **User input does not modify the source code.**
-
----
-
-## ✨ Features
+## Features
 
 | Feature | Description |
 |---|---|
-| Public Instagram profile analysis | Username, display name, bio, follower/following counts, post count, account status |
-| Public-content analysis | Captions and publicly accessible metadata |
+| Public-profile analysis | Username, display name, bio, follower/following counts, post count, account status |
+| Public-content analysis | Captions and metadata of the most recent publicly accessible posts |
 | Private-account limited analysis | Only information legitimately visible without authorization |
-| Spam analysis | Detects spam-like characteristics in retrieved content |
-| Harassment / bullying analysis | Detects harassment, bullying, threats, or targeted abuse |
-| Hate-speech analysis | Detects potentially prohibited hateful content. Political criticism is **not** automatically classified as hate speech |
-| Impersonation-risk analysis | Flags indicators that may suggest impersonation |
-| General policy-risk analysis | Other relevant policy-risk categories |
-| Account-level AI analysis | Combines per-category results into an overall model risk score |
-| Confidence & severity scores | Per-category model confidence and severity |
-| Evidence-based analysis | References actual retrieved content wherever possible |
-| Sonics Enforcement Prediction Simulator | Hypothetical, model-based enforcement likelihood |
-| Scenario comparison | Compare different hypothetical scenarios side by side |
-| Local AI mode | **Default** — no API key required, runs on your machine |
-| Optional Google Gemini mode | Uses Gemini only when explicitly configured |
+| Policy-category analysis | Fixed taxonomy: Spam, Harassment / Bullying, Hate Speech, Impersonation Risk, Sexually Explicit Material. Unknown signals are safely bucketed instead of guessed. |
+| Evidence-based reasoning | Each category assessment references actual retrieved content (quote, source, reference) wherever possible |
+| Evidence verification | Each piece of evidence is marked mechanically verified (verbatim match in the source) or LLM-judged, with a strength and relevance score |
+| Confidence & severity | Per-category model confidence and severity |
+| Uncertainties & notes | Explicitly reported limitations of the analysis |
+| Deterministic fallback engine | If the local LLM is unavailable, the app still works in degraded mode using a rules-based engine |
+| Hypothetical simulation tool | Standalone, isolated model estimate; never sent to Instagram |
+| Local AI default | Ollama — no API key required, runs on your machine (8 GB RAM friendly) |
 | FastAPI backend | Stateless REST API |
-| React frontend | Interactive dashboard |
-| pip-installable package | `pip install .` |
-| CLI support | Start via the `sonics` command |
-| No OpenAI API key required | OpenAI is **not** used at all |
-| No mandatory API key in local mode | Local AI works out of the box |
+| React dashboard | Served by the backend itself; single `sonics` command to run everything |
+| pip-installable package | `pip install .` starts the whole app |
+| CLI with startup checks | Banner, port-in-use detection, Ollama health/model warning, browser auto-open |
+| No OpenAI | OpenAI is **not** used anywhere |
 
 ---
 
-## 🛡️ Read-Only Design
+## Read-Only Design
 
 The application does **not**:
 
@@ -188,109 +42,90 @@ The application does **not**:
 - Automatically report accounts
 - Ban accounts
 - Control multiple Instagram accounts
-- Bypass authentication
-- Bypass CAPTCHAs
-- Bypass rate limits
+- Bypass authentication, CAPTCHAs, or rate limits
 - Access private posts without authorization
 - Manipulate Instagram enforcement
 
-The enforcement simulator is **purely hypothetical**. Report counts and reporting-source counts exist solely as simulation variables — they are never sent to Instagram.
+The enforcement simulator is **purely hypothetical**. Report counts and
+reporting-source counts exist solely as simulation variables — they are never
+sent to Instagram. Simulator schemas are fully isolated from the analysis
+schemas.
 
 ---
 
-## 📋 Requirements
+## Requirements
 
 | Requirement | Detail |
 |---|---|
 | Python | 3.9 or newer |
-| Node.js | 18 or newer (for the React frontend) |
+| Node.js | 18 or newer (only needed to rebuild the frontend) |
 | Internet connection | Required for permitted Instagram data retrieval |
-| Local AI hardware | Runs on a normal consumer PC — CPU inference is supported. A GPU improves speed but is **not** required. |
-| Optional Google Gemini | Requires a Google API key, and **only** when `AI_PROVIDER=gemini` |
-
+| Ollama | Local LLM server — runs on a normal consumer PC; 8 GB RAM is sufficient with the default model |
 ---
 
-## 🚀 Installation
+## AI Configuration
 
-> ⚠️ **Installation is a ONE-TIME process.** After installing, you never run `pip install` again for each account. User input is data — it does not trigger installation or source-code changes.
+The application uses a local-LLM provider with a deterministic fallback.
 
-### Step 1 — Download or clone the project
+### Default: Ollama (local, no API key)
 
-Download or clone this repository and enter its directory:
+1. Install [Ollama](https://ollama.com/download) and leave it running.
+2. Pull the default model once:
 
-```bash
-cd banning-tool-by-me
-```
+   ```bash
+   ollama pull llama3.2:3b
+   ```
 
-### Step 2 — Create a virtual environment (recommended)
+   `llama3.2:3b` is intentionally lightweight so the app runs comfortably on a
+   typical **8 GB RAM** machine. On machines with 16 GB+ RAM you can switch to a
+   larger model (e.g. `llama3.1:8b`).
 
-**Windows:**
+3. Start the app (see **Run** below). No `.env` file is required.
 
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-```
+### Fallback: deterministic rules engine
 
-**macOS/Linux:**
+If `AI_PROVIDER=ollama` is set but the Ollama server is unreachable (or the
+model fails), the pipeline automatically degrades to a local rules-based
+engine. The response clearly reports `analysis_status: "degraded"`,
+`provider: "fallback-rules"`, and adds explanatory notes — the app never crashes
+and never silently switches to a different model.
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
+### Configuration reference
 
-### Step 3 — Install the application
+| Variable | Default | Purpose |
+|---|---|---|
+| `AI_PROVIDER` | `ollama` | `ollama`, or `local` to force the rules engine |
+| `OLLAMA_BASE_URL` | `http://127.0.0.1:11434` | Ollama HTTP server address |
+| `OLLAMA_MODEL` | `llama3.2:3b` | Ollama model name |
+| `OLLAMA_TIMEOUT` | `120` | Seconds to wait for an Ollama response |
+| `HOST` | `127.0.0.1` | Server bind address |
+| `PORT` | `8000` | Server port |
+| `SONICS_NO_BROWSER` | `0` | `1` disables auto-opening the dashboard |
 
-```bash
-pip install .
-```
-
-All required Python dependencies are declared in `pyproject.toml` and installed by this single command. This is the **one-time** installation — you do **not** run `pip install` for every account you analyze.
-
+Copy `backend/.env.example` to `backend/.env` (or the project root `.env`) to
+customize these values.
 ---
 
-## 🤖 AI Configuration
+## Run
 
-### Default: Local AI (no API key required)
-
-Local AI is the default. It runs entirely on your machine and requires **no API key**, no billing information, and no paid service. Create a `.env` file next to the backend configuration (or rely on defaults):
-
-```env
-AI_PROVIDER=local
-```
-
-> **DEFAULT MODE: Local AI — no API key required.**
-
-### Optional: Google Gemini
-
-Only if you want to use Gemini instead of local AI:
-
-```env
-AI_PROVIDER=gemini
-GOOGLE_API_KEY=your_google_api_key
-```
-
-> **OPTIONAL MODE: Google Gemini — requires a Google API key.**
-
-**Important notes:**
-
-- OpenAI is **not required** and is **not used** anywhere in this application.
-- Gemini is **optional**.
-- Local AI requires **no API key**.
-- Gemini availability, free-tier access, quotas, and usage limits are controlled by Google and **may change at any time**.
-
----
-
-## ▶️ Run
-
-Start the backend with the installed CLI command:
+Start the application with the installed CLI command:
 
 ```bash
 sonics
 ```
 
-This launches the FastAPI backend and serves the dashboard.
+The CLI prints a startup banner with:
 
-If you are developing the frontend, start it in development mode from the `frontend/` directory (one-time `npm install`):
+- The dashboard URL
+- The active AI provider and model
+- Any warnings (Ollama unreachable, model not installed, port in use)
+- It auto-opens the dashboard in your browser (disable with `SONICS_NO_BROWSER=1`)
+
+> If the configured port is already in use the CLI exits immediately with a
+> clear message instead of crashing mid-startup.
+
+If you are developing the frontend, you can also start a Vite dev server from
+the `frontend/` directory (one-time `npm install`):
 
 ```bash
 cd frontend
@@ -298,127 +133,252 @@ npm install
 npm run dev
 ```
 
-When running in development mode, the backend normally listens on `http://localhost:8000`.
+The Vite dev server proxies `/api` requests to the backend at
+`http://localhost:8000`.
 
 ---
 
-## 🧭 First Use
+## First Use
 
-1. **Start the application** — run `sonics` (backend) and, if in development, `npm run dev` (frontend).
+1. **Start the application** — run `sonics`.
 2. **Open the dashboard** in your browser.
 3. **Enter an account** — type `@username` or the supported Instagram profile URL.
 4. **Click "Analyze Account"**.
 5. **Wait** for the profile/content analysis to complete.
-6. **Review** the results:
-   - Account Overview
-   - Content Analysis (Spam, Harassment/Bullying, Hate Speech, Impersonation, Other Policy Risk)
-   - Risk Summary
-   - Evidence
-   - Confidence
-   - Severity
-7. **Open** the **"Sonics Enforcement Prediction Simulator"**.
-8. **Enter hypothetical simulation values** (violation / spam / impersonation report counts and source count).
+6. **Review the results** — Account Overview, Analysis Status, Policy Categories
+   (ranked, with evidence, verification, confidence, severity), Overall
+   Observations, and Uncertainties.
+7. **Open the "Enforcement Prediction Simulator"** at the bottom of the results.
+8. **Enter hypothetical simulation values** (violation / spam / impersonation
+   report counts and source count).
 9. **Click "Run Simulation"**.
-10. **Review** the model estimate, confidence, uncertainty, and scenario comparison.
+10. **Review the model estimate**, confidence, uncertainty, and factors considered.
+
+> **Note:** Ollama does **not** pull models automatically when accessed via the
+> API. If the model is not yet installed, run `ollama pull <model>` once before
+> using the app. The CLI banner will warn you if the model is missing.
 
 ---
 
-## 🔁 Analyzing Another Account
+## Analyzing Another Account
 
-Once the application is installed, simply enter another username. The same installed application processes each new input:
+Once the application is installed, simply enter another username. No additional
+installation is needed:
 
 ```text
 @account_one  →  Analyze  →  Result
 @account_two  →  Analyze  →  Result
 ```
 
-No additional installation. No source-code changes. No AI-agent code changes. No dependency installation. The application simply retrieves the new account's accessible data and runs the same analysis pipeline.
+The same installed application processes each new input. User input is data —
+it never triggers installation, source-code changes, or AI-agent code changes.
 
 ---
 
-## 👤 Public vs Private Accounts
+## Public vs Private Accounts
 
 ### Public account
 
-The application analyzes all legitimately accessible profile information and public content — profile fields, posts, captions, and publicly accessible metadata.
+The application analyzes all legitimately accessible profile information and
+public content — profile fields, posts, captions, and publicly accessible
+metadata.
 
 ### Private account
 
-The application **never attempts to bypass privacy controls**. It only analyzes information legitimately visible without authorization — for example, username, display name, bio, and public profile metadata — and displays:
+The application **never attempts to bypass privacy controls**. It only analyzes
+information legitimately visible without authorization — for example, username,
+display name, bio, and public profile metadata — and displays a notice:
 
-> "Limited analysis: this account is private or has limited publicly accessible information."
+> "Limited analysis: this account is private or has limited publicly accessible
+> information."
 
 Private posts and private content are never accessed.
-
 ---
 
-## 📊 Understanding Results
+## Understanding Results
 
 | Term | Meaning |
 |---|---|
-| **Classification** | The model's category label for a signal (e.g., "Low Risk", "Potential Risk", "No Clear Violation") |
-| **Confidence** | How confident the model is in its **own classification**. It does **NOT** mean the probability that Instagram will ban the account. |
-| **Severity** | The assessed potential impact or severity of an identified signal |
-| **Risk score** | The account-level model's overall risk assessment. Application-generated, **not an official Instagram score**. |
-| **Estimated enforcement likelihood** | A hypothetical model estimate produced by the Sonics simulator. It is **NOT** Instagram's official enforcement probability. |
+| **Policy category** | The model's fixed taxonomy label (Spam, Harassment / Bullying, Hate Speech, Impersonation Risk, Sexually Explicit Material) |
+| **Severity** | Assessed potential impact of an identified signal (low / medium / high) |
+| **Confidence** | How confident the model is in its own category assessment. It does **NOT** mean the probability that Instagram will act. |
+| **Verification** | Whether each evidence piece is a mechanically verified quote (verbatim match in source) or an LLM-judged inference |
+| **Evidence strength / relevance** | Per-evidence object scores derived from the reasoning layer |
+| **Analysis status** | `completed`, `limited`, `degraded` (fallback-rules), or `unavailable` — tells you what happened during the LLM step |
+| **Estimated enforcement likelihood** | A hypothetical model estimate produced by the simulator. It is **NOT** Instagram's official enforcement probability. |
 
-**"Confidence"** means how confident the model is in its own classification. It does not mean probability that Instagram will ban the account.
+**"Confidence"** means how confident the model is in its own classification. It
+does **not** mean the probability that Instagram will ban the account.
 
-**"Estimated enforcement likelihood"** is a hypothetical application-model output. It is not Instagram's official enforcement probability.
+**"Estimated enforcement likelihood"** is a hypothetical application-model
+output. It is not Instagram's official enforcement probability.
 
 ---
 
-## 🛠️ Troubleshooting
+## API Reference
 
-| Problem | Solution |
+All endpoints accept and return JSON. Full schemas are defined in
+`backend/app/models/schemas.py` (analysis) and
+`backend/app/models/policies.py` (analysis taxonomy and output policy data).
+
+### `POST /api/analyze`
+
+Request body:
+
+| Field | Type | Required |
+|---|---|---|
+| `username` | string | yes |
+
+Response body (key fields):
+
+```json
+{
+  "profile": {
+    "username": "example",
+    "display_name": "...",
+    "bio": "...",
+    "is_private": false,
+    "follower_count": 123,
+    "following_count": 45,
+    "post_count": 10,
+    "recent_posts": [ ... ],
+    "access_status": "Public"
+  },
+  "access_status": "full",
+  "analysis": {
+    "analysis_status": "completed",
+    "provider": "ollama",
+    "policy_categories": [
+      {
+        "rank": 1,
+        "category": "Spam",
+        "severity": "Medium",
+        "confidence": 40,
+        "reasoning": "...",
+        "verification": "string",
+        "evidence": [ ... ],
+        "context": null
+      }
+    ],
+    "overall_observations": [ ... ],
+    "uncertainties": [ ... ],
+    "notes": [ ... ]
+  }
+}
+```
+
+> Analysis results never include an `enforcement_simulation` object.
+> The simulator is fully isolated.
+
+### `POST /api/simulate`
+
+Request body (the frontend derives the `risk` object locally from the analysis):
+
+| Field | Type | Required |
+|---|---|---|
+| `risk` | object | yes (see `EnforcementRisk` schema) |
+| `inputs` | object | yes (violation_reports, spam_reports, impersonation_reports, reporting_sources) |
+
+Response body:
+
+```json
+{
+  "estimated_likelihood": 22,
+  "confidence": 60,
+  "uncertainty": 22,
+  "factors": [ ... ],
+  "scenario_description": "..."
+}
+```
+
+### `GET /api/healthz`
+
+Returns `{"status": "ok"}`.
+---
+
+## Troubleshooting
+
+| Problem | Fix |
 |---|---|
-| `pip install .` fails | Make sure your virtual environment is activated and Python 3.9+ is on your PATH |
-| Missing dependencies | Re-run `pip install .` once in an activated environment. Dependencies are installed at setup, never during analysis. |
-| Local model unavailable | The first analysis may download the configured local model once. Ensure you have internet access and storage space for that one-time download. A clear message explains which model is required. |
-| Gemini API key missing | If `AI_PROVIDER=gemini`, set `GOOGLE_API_KEY` in your `.env`. Otherwise switch back to `AI_PROVIDER=local`. |
-| Instagram data unavailable | The account may be private, or Instagram may be rate-limiting requests. The application shows **"Data unavailable"** instead of inventing data. |
-| Private account | The application intentionally limits the analysis to publicly visible information. |
-| Invalid username or profile URL | Enter `@username` or a full Instagram profile URL such as `https://www.instagram.com/username/`. |
-| Network / API failure | Check your internet connection and retry. |
-| Frontend cannot reach backend | Ensure the backend is running on `http://localhost:8000` and the frontend is configured to call that origin. |
-
-> This application never provides instructions for bypassing Instagram restrictions.
+| "Frontend build not found" | Run `cd frontend && npm install && npm run build`, then copy `frontend/dist/*` into `backend/app/static/` (or re-install with `pip install .`) |
+| "Port already in use" | Another Sonics instance or program is using the port. Set `PORT=8001` in your `.env` and retry |
+| Local model unavailable | Install the model once with `ollama pull llama3.2:3b`. The CLI banner warns if the configured model is missing |
+| Result says `analysis_status: "degraded"` | Ollama was unavailable for this request. Start the Ollama app and re-run |
+| Result says `analysis_status: "unavailable"` | The LLM step failed (connection, timeout, or malformed JSON). Check Ollama is running and the model is installed |
+| Instagram rate-limit / 429 errors | Wait and re-run later |
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
-banning-tool-by-me/
-├── backend/
+.
+├── backend/                     # Python FastAPI backend + tests
 │   ├── app/
-│   │   ├── agents/            # AI analysis agents (analyzer + providers)
-│   │   │   └── providers/     # AIProvider (LocalAIProvider, GeminiAIProvider)
-│   │   ├── instagram/         # Instagram data-access layer
-│   │   ├── models/            # Data schemas
-│   │   └── simulation/        # Sonics Enforcement Prediction Simulator
-│   ├── tests/                 # Backend automated tests
-│   ├── .env.example           # Environment-variable template
-│   └── requirements.txt       # Backend dependencies (mirrors pyproject.toml)
-├── frontend/
-│   ├── src/                   # React source code
-│   ├── index.html             # Frontend entry HTML
-│   └── package.json           # Frontend dependencies and scripts
-├── pyproject.toml              # Package configuration + `sonics` CLI entry point
+│   │   ├── main.py              # FastAPI application + `sonics` CLI
+│   │   ├── agents/
+│   │   │   ├── pipeline.py      # Orchestrator: Instagram → agents → judge → output
+│   │   │   ├── analyzer.py      # Rule-based fallback + LLM orchestrator
+│   │   │   ├── content_analyst.py
+│   │   │   ├── context_analyst.py
+│   │   │   ├── evidence_verifier.py
+│   │   │   ├── judge.py         # Final arbitrator → AnalysisOutput
+│   │   │   ├── policy_analyst.py
+│   │   │   └── providers/
+│   │   │       ├── ollama.py    # Ollama HTTP provider (local, no API key)
+│   │   │       └── provider.py
+│   │   ├── api/routes.py
+│   │   ├── instagram/client.py
+│   │   ├── models/
+│   │   │   ├── schemas.py       # Core domain schemas (Profile, AnalysisOutput)
+│   │   │   └── policies.py      # Static taxonomy + confidence/severity mapping
+│   │   ├── simulation/
+│   │   │   ├── simulator.py     # Deterministic math-only enforcement likelihood model
+│   │   │   └── schemas.py       # EnforcementRisk, SimulationResult (isolated)
+│   │   └── static/              # Pre-built React dashboard (from frontend/dist)
+│   ├── tests/                   # test_api, test_pipeline, test_simulation, ...
+│   ├── requirements.txt
+│   └── .env.example
+├── frontend/                    # React + Vite dashboard
+│   └── src/App.jsx
+├── pyproject.toml
 └── README.md
 ```
 
 ---
 
-## ⚖️ Disclaimer
+## Development
 
-This project is an independent analysis and simulation application. It is **not affiliated with or endorsed by Instagram or Meta**.
+### Running the test suite
 
-- Instagram's actual enforcement system is **proprietary** and is not publicly known.
-- Simulation results are **model estimates**.
-- Results should **not** be interpreted as guaranteed enforcement outcomes.
-- This application operates **read-only** with respect to Instagram: it never submits reports, bans accounts, or manipulates enforcement.
+```bash
+cd backend
+python -m pytest -q
+```
+
+### Rebuilding the frontend
+
+```bash
+cd frontend
+npm install
+npm run build
+# Output lands in frontend/dist/ — copy it into backend/app/static/
+```
 
 ---
 
-**One build. One install. Unlimited normal user inputs. Dynamic analysis outputs.**
+## Disclaimer
+
+> **Instagram is a trademark of Meta Platforms, Inc.**
+> This application is not affiliated with, endorsed by, or connected to Meta
+> Platforms, Inc. or Instagram.
+>
+> This application provides **read-only analysis of publicly accessible
+> information**. It does **not** submit Instagram reports, ban accounts, or
+> predict Instagram's enforcement decisions. The enforcement-prediction
+> simulator produces **hypothetical model estimates** for educational and
+> research purposes only — they are **not** official Instagram enforcement
+> probabilities.
+>
+> Users are responsible for ensuring that any use of this application complies
+> with Instagram's Terms of Service and applicable laws.

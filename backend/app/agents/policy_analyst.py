@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import List
 
-from ..models.policies import POLICY_CATEGORIES, POLICY_NAMES
+from ..models.policies import POLICY_CATEGORIES, POLICY_NAMES, normalize_category_name
 from ..models.schemas import (
     CandidateCategory, CategoryScan, ContentAnalysis, ContextAnalysis, InstagramProfile,
 )
@@ -66,7 +66,9 @@ class PolicyCategoryAnalyst:
         for entry in raw[:20]:
             if not isinstance(entry, dict):
                 continue
-            name = str(entry.get("category") or "").strip()
+            # Normalize legacy/alias names from the model into the canonical
+            # taxonomy so the output is always internally consistent.
+            name = normalize_category_name(str(entry.get("category") or "").strip())
             if name not in names:
                 continue
             if not bool(entry.get("relevant")):

@@ -22,12 +22,15 @@ from .policy_analyst import PolicyCategoryAnalyst
 from .providers.ollama import OllamaError  # noqa: F401
 from .providers.provider import LocalAIProvider, get_provider
 
-_FALLBACK_RULES_MAP = [
-    ("Spam", "Spam"),
-    ("Impersonation", "Impersonation Risk"),
-    ("Bullying & Harassment", "Harassment / Bullying"),
-    ("Hateful Conduct", "Hate Speech"),
-    ("Other Policy Areas", "General Policy Risk"),
+# Canonical taxonomy names used by the deterministic fallback engine. These are
+# the SAME category names used by the LLM path (single source of truth).
+_FALLBACK_CATEGORIES = [
+    "Spam",
+    "Impersonation",
+    "Bullying & Harassment",
+    "Hateful Conduct",
+    "Fraud / Scams / Deceptive Practices",
+    "Restricted Goods & Services",
 ]
 
 
@@ -137,9 +140,9 @@ class AnalysisPipeline:
             return ContentAnalysis(status="unavailable", note="No accessible content.")
         local = LocalAIProvider()
         observations = []
-        for policy_name, rules_key in _FALLBACK_RULES_MAP:
+        for category in _FALLBACK_CATEGORIES:
             try:
-                result = local.analyze_text(combined, rules_key)
+                result = local.analyze_text(combined, category)
             except Exception:
                 continue
             if result.classification not in ("Low Risk", "Potential Risk", "High Risk"):
@@ -151,8 +154,8 @@ class AnalysisPipeline:
                 continue
             observations.append(ContentObservation(
                 reference="content", quote=snippet[:160],
-                text=f"Deterministic rule '{rules_key}' matched: {snippet[:220]}",
-                content_signal=rules_key, confidence=result.confidence,
+                text=f"Deterministic rule '{category}' matched: {snippet[:220]}",
+                content_signal=category, confidence=result.confidence,
             ))
         if not observations:
             return ContentAnalysis(status="unavailable", note="No deterministic signals matched.")
@@ -172,12 +175,14 @@ class AnalysisPipeline:
     def _fallback_scan(self, profile, content):
         candidates = []
         for obs in content.observations:
-            pname = next((p for p, r in _FALLBACK_RULES_MAP if r == obs.content_signal), None)
-            if pname is None:
+            if obs.content_signal not in _FALLBACK_CATEGORIES:
                 continue
             candidates.append(CandidateCategory(
-                category=pname, relevant=True,
-                rationale=f"Deterministic fallback matched '{obs.content_signal}' (Ollama unavailable; NOT an LLM).",
+                category=obs.content_signal, relevant=True,
+                rationale=(
+                    "Deterministic fallback matched "
+                    f"'{obs.content_signal}' (Ollama unavailable; NOT an LLM)."
+                ),
                 evidence_refs=[obs.reference], initial_confidence=max(0.5, obs.confidence),
             ))
         return CategoryScan(candidates=candidates, status="completed", note="Deterministic fallback scan.")

@@ -12,8 +12,43 @@ function severityClass(severity = '') {
   return 'risk-low';
 }
 
+function statusLabel(status) {
+  const map = {
+    completed: 'Completed',
+    limited: 'Limited data',
+    degraded: 'Fallback mode (Ollama unavailable)',
+    unavailable: 'Unavailable',
+  };
+  return map[status] || status || 'Unknown';
+}
+
 function num(value) {
   return value === null || value === undefined ? 'N/A' : Number(value).toLocaleString();
+}
+
+function truncate(text, n = 160) {
+  if (!text) return 'Unavailable';
+  const s = String(text);
+  return s.length > n ? s.slice(0, n - 3) + '...' : s;
+}
+
+// Build the isolated simulator's hypothetical AccountRisk from analysis results.
+// The simulator is a standalone hypothetical tool: this derived risk object is
+// sent only to the local /api/simulate endpoint, never to Instagram.
+function buildRisk(analysis) {
+  const cats = (analysis && analysis.policy_categories) || [];
+  const top = cats[0] || null;
+  const observations = (analysis && analysis.overall_observations) || [];
+  return {
+    overall_score: top ? Math.round(Math.max(2, Math.min(98, top.confidence))) / 100 : 0.1,
+    detected_categories: cats.map((c) => c.category),
+    severity: top ? top.severity : 'low',
+    confidence: top ? Math.max(0.2, top.confidence / 100) : 0.2,
+    items_analyzed: observations.length,
+    summary: cats.length
+      ? 'Derived from analysis: ' + cats.map((c) => c.category).join(', ')
+      : 'No policy category met the evidence bar in the analysis.',
+  };
 }
 
 function App() {
@@ -25,7 +60,7 @@ function App() {
     violation_reports: 0,
     spam_reports: 0,
     impersonation_reports: 0,
-    reporting_sources: 0
+    reporting_sources: 0,
   });
   const [simLoading, setSimLoading] = useState(false);
   const [simResult, setSimResult] = useState(null);
@@ -34,10 +69,10 @@ function App() {
     if (!username.trim()) return;
     setLoading(true);
     setError('');
+    setSimResult(null);
     try {
       const res = await axios.post(`${API_BASE}/analyze`, { username });
       setData(res.data);
-      setSimResult(res.data.enforcement_simulation || null);
     } catch (err) {
       setError(
         err.response?.data?.detail ||
@@ -54,8 +89,8 @@ function App() {
     setError('');
     try {
       const res = await axios.post(`${API_BASE}/simulate`, {
-        risk: data.account_risk,
-        inputs: simInputs
+        risk: buildRisk(data.analysis || {}),
+        inputs: simInputs,
       });
       setSimResult(res.data);
     } catch (err) {
@@ -70,14 +105,17 @@ function App() {
     setSimInputs((prev) => ({ ...prev, [key]: value }));
   };
 
-  const riskPct = data ? (data.account_risk.overall_score * 100) : 0;
-  const riskConf = data ? (data.account_risk.confidence * 100) : 0;
+  const analysis = data ? data.analysis || {} : {};
+  const categories = analysis.policy_categories || [];
+  const observations = analysis.overall_observations || [];
+  const uncertainties = analysis.uncertainties || [];
+  const notes = analysis.notes || [];
 
   return (
     <div className="container">
       <div className="header">
         <h1>Sonics Dashboard</h1>
-        <p>Instagram AI Account Analysis &amp; Hypothetical Enforcement Prediction Simulator</p>
+        <p>Read-only Instagram public-content policy &amp; evidence analysis</p>
       </div>
 
       <div className="input-group">
@@ -102,72 +140,113 @@ function App() {
               <h2>Account Overview</h2>
               <p><strong>Username:</strong> @{data.profile.username}</p>
               <p><strong>Display Name:</strong> {data.profile.display_name || 'Unavailable'}</p>
-              <p><strong>Bio:</strong> {data.profile.bio || 'Unavailable'}</p>
+              <p><strong>Bio:</strong> {truncate(data.profile.bio)}</p>
+              <p><strong>Account Status:</strong> {data.access_status || 'Unavailable'}</p>
               <p><strong>Followers:</strong> {num(data.profile.follower_count)}</p>
               <p><strong>Following:</strong> {num(data.profile.following_count)}</p>
               <p><strong>Posts:</strong> {num(data.profile.post_count)}</p>
-              <p><strong>Status:</strong> {data.profile.access_status || 'Unavailable'}</p>
               {data.profile.is_private && (
                 <p className="private-note">
-                  Limited analysis: this account is private or has limited publicly accessible information.
+                  Limited analysis: this account is private or has limited publicly
+                  accessible information.
                 </p>
               )}
             </div>
 
             <div className="card">
-              <h2>Account Risk Summary</h2>
-              <h3 className={severityClass(data.account_risk.severity)}>
-                Overall Model Risk: {riskPct.toFixed(1)}%
-              </h3>
-              <p><strong>Severity:</strong> {data.account_risk.severity}</p>
-              <p><strong>Model Confidence:</strong> {riskConf.toFixed(1)}%</p>
-              <p><strong>Items Analyzed:</strong> {data.account_risk.items_analyzed}</p>
-              {data.account_risk.detected_categories.length > 0 && (
-                <p>
-                  <strong>Detected Signals:</strong>{' '}
-                  {data.account_risk.detected_categories.join(', ')}
-                </p>
+              <h2>Analysis Status</h2>
+              <p>
+                <strong>Status:</strong>{' '}
+                <span className="status-badge">{statusLabel(analysis.analysis_status)}</span>
+              </p>
+              <p><strong>Provider:</strong> {analysis.provider || 'ollama'}</p>
+              {notes.length > 0 && (
+                <div className="note-list">
+                  <strong>Notes:</strong>
+                  <ul>{notes.map((n, i) => <li key={i}>{n}</li>)}</ul>
+                </div>
               )}
-              <p className="summary-text"><strong>Summary:</strong> {data.account_risk.summary}</p>
               <p className="disclaimer">
-                Application-generated risk assessment — not an official Instagram score.
+                <em>Read-only analysis of publicly accessible information.</em>
               </p>
             </div>
           </div>
 
-          <div className="card">
-            <h2>Content Analysis</h2>
-            <div className="analysis-scroll">
-              {data.content_analysis.map((item, idx) => (
-                <div key={idx} className="analysis-item">
-                  <h4>{item.category}</h4>
-                  <p><strong>Classification:</strong> {item.classification}</p>
-                  <p className={severityClass(item.severity)}>
-                    <strong>Severity:</strong> {item.severity}
-                  </p>
-                  <p><strong>Confidence:</strong> {(item.confidence * 100).toFixed(1)}%</p>
-                  {item.evidence && item.evidence !== 'Unavailable' && (
-                    <p className="evidence"><strong>Evidence:</strong> “{item.evidence}”</p>
-                  )}
-                  <p className="explanation">{item.explanation}</p>
-                </div>
-              ))}
-              {data.content_analysis.length === 0 && (
-                <p>No content available for analysis.</p>
-              )}
+          {categories.length > 0 && (
+            <div className="card">
+              <h2>Policy Categories</h2>
+              <div className="analysis-scroll">
+                {categories.map((cat) => (
+                  <div key={cat.category} className="analysis-item">
+                    <h4>#{cat.rank} {cat.category}</h4>
+                    <p className={severityClass(cat.severity)}>Severity: {cat.severity}</p>
+                    <p>Confidence: {cat.confidence}%</p>
+                    <p>Verification: {cat.verification}</p>
+                    {cat.context && <p className="explanation">Context: {cat.context}</p>}
+                    <p className="explanation">{cat.reasoning}</p>
+                    {cat.evidence.length > 0 && (
+                      <div>
+                        <strong>Evidence</strong>
+                        {cat.evidence.map((ev, i) => (
+                          <div key={i} className="evidence">
+                            <p><em>&ldquo;{ev.quote}&rdquo;</em></p>
+                            <p>source: {ev.source} ({ev.reference})</p>
+                            <p>strength: {ev.strength} | relevance: {Math.round(ev.relevance * 100)}% | {ev.verification}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-            {data.profile.is_private && (
-              <p className="private-note">
-                Limited analysis: this account is private or has limited publicly accessible information.
+          )}
+
+          {categories.length === 0 && analysis.analysis_status !== 'unavailable' && (
+            <div className="card">
+              <p>
+                No policy category met the evidence bar. Absence of detected signals
+                is not confirmation of compliance.
               </p>
-            )}
-          </div>
+            </div>
+          )}
+
+          {observations.length > 0 && (
+            <div className="card">
+              <h2>Overall Observations</h2>
+              <ul>
+                {observations.map((o, i) => (
+                  <li key={i} className="summary-text">
+                    <strong>{o.aspect}</strong> &mdash; {o.detail}
+                    {o.reference ? ` (${o.reference})` : ''}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {uncertainties.length > 0 && (
+            <div className="card">
+              <h2>Uncertainties</h2>
+              <ul>
+                {uncertainties.map((u, i) => (
+                  <li key={i} className="summary-text">
+                    <strong>{u.factor}:</strong> {u.detail}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
 
           <div className="card simulator-box">
-            <h2>Sonics Enforcement Prediction Simulator</h2>
+            <h2>Enforcement Prediction Simulator</h2>
             <p className="disclaimer">
-              <em>Hypothetical model estimate — not an official Instagram enforcement probability.
-              Report counts are simulation variables only and are never sent to Instagram.</em>
+              <em>
+                Hypothetical model estimate &mdash; not an official Instagram
+                enforcement probability. Report counts are simulation variables
+                only and are never sent to Instagram.
+              </em>
             </p>
 
             <div className="grid">
@@ -196,11 +275,7 @@ function App() {
                   value={simInputs.reporting_sources}
                   onChange={onSimNumber('reporting_sources')}
                 />
-                <button
-                  className="dark-btn"
-                  onClick={runSimulation}
-                  disabled={simLoading}
-                >
+                <button className="dark-btn" onClick={runSimulation} disabled={simLoading}>
                   {simLoading ? 'Running...' : 'Run Simulation'}
                 </button>
               </div>
@@ -211,10 +286,8 @@ function App() {
                     <h3>Estimated Enforcement Likelihood</h3>
                     <h1 className="sim-number">{simResult.estimated_likelihood}%</h1>
                     <p>Model Confidence: {simResult.confidence}%</p>
-                    <p>Uncertainty: ±{simResult.uncertainty}%</p>
-                    <p className="disclaimer">
-                      Result Type: Hypothetical Model Estimate
-                    </p>
+                    <p>Uncertainty: &plusmn;{simResult.uncertainty}%</p>
+                    <p className="disclaimer">Result Type: Hypothetical Model Estimate</p>
                     {simResult.factors.length > 0 && (
                       <div className="factor-list">
                         <strong>Factors considered:</strong>

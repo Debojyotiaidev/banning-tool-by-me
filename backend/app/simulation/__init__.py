@@ -1,1 +1,1 @@
-"""Enforcement prediction simulation."""
+"""Isolated hypothetical enforcement simulator (NOT part of the analysis pipeline)."""

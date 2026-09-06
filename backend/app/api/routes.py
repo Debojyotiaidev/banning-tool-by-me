@@ -8,13 +8,9 @@ from pydantic import BaseModel
 
 from ..agents.analyzer import AnalysisPipeline
 from ..instagram.client import InstagramClient
+from ..models.schemas import InstagramProfile
+from ..simulation.schemas import AccountRisk, SimulationInput, SimulationOutput
 from ..simulation.simulator import SonicsSimulator
-from ..models.schemas import (
-    AccountRisk,
-    InstagramProfile,
-    SimulationInput,
-    SimulationOutput,
-)
 
 router = APIRouter(prefix="/api")
 

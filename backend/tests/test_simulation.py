@@ -1,6 +1,6 @@
 import pytest
 from app.simulation.simulator import SonicsSimulator
-from app.models.schemas import SimulationInput, AccountRisk
+from app.simulation.schemas import SimulationInput, AccountRisk
 
 def test_simulator_basic():
     simulator = SonicsSimulator()

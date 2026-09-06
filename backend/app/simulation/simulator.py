@@ -1,4 +1,4 @@
-from ..models.schemas import SimulationInput, SimulationOutput, AccountRisk
+from .schemas import SimulationInput, SimulationOutput, AccountRisk
 import math
 
 class SonicsSimulator:

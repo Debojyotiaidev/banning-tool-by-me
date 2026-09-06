@@ -20,8 +20,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-gemini = ["google-generativeai>=0.7.0"]
-ml = ["transformers>=4.40.0", "torch>=2.2.0"]
 dev = ["pytest>=7.4.0"]
 
 [project.scripts]

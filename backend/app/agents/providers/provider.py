@@ -1,13 +1,8 @@
 """AI provider implementations for Sonics analysis.
 
-Default local mode uses a built-in, deterministic, offline rules engine:
-no API keys, no model downloads, works on any machine.
-
-Optional providers (see ``get_provider`` / README):
-
-- ``gemini`` — Google Gemini (requires ``GOOGLE_API_KEY`` and ``pip install .[gemini]``)
-- ``ml``     — Local transformers model (requires ``pip install .[ml]``), falls
-               back to the built-in engine when the ML backend is unavailable.
+The Ollama provider (``app.agents.providers.ollama``) is the default local-LLM
+path. ``LocalAIProvider`` here is the built-in deterministic offline rules
+engine used by the fallback path — no API keys, no model downloads.
 """
 from __future__ import annotations
 
@@ -16,7 +11,21 @@ import re
 from abc import ABC, abstractmethod
 from typing import Dict, List, Tuple
 
-from ...models.schemas import AnalysisResult, InstagramProfile
+from pydantic import BaseModel
+
+from ...models.policies import normalize_category_name
+from ...models.schemas import InstagramProfile
+
+
+class AnalysisResult(BaseModel):
+    """Output of the deterministic offline rules engine (fallback only)."""
+
+    category: str
+    classification: str
+    confidence: float
+    severity: str
+    evidence: str
+    explanation: str
 
 # ---------------------------------------------------------------------------
 # Built-in signal rules (lightweight, deterministic, offline)
@@ -32,7 +41,7 @@ _SIGNALS: Dict[str, Dict] = {
             "giveaway": 2, "winner": 1, "promo": 1, "discount": 1, "cheap": 1,
             "cashapp": 2, "paypal": 2, "bitcoin": 2, "crypto": 1,
             "auto follower": 3, "get followers": 3, "buy followers": 4,
-            "boost your": 2,
+            "buy likes": 3, "boost your": 2,
         },
         "patterns": [
             (r"@[A-Za-z0-9._]+", "mentions @handles", 0.3),
@@ -40,7 +49,7 @@ _SIGNALS: Dict[str, Dict] = {
             (r"https?://\S+", "external link", 0.5),
         ],
     },
-    "Harassment / Bullying": {
+    "Bullying & Harassment": {
         "keywords": {
             "kill yourself": 4, "kys": 3, "shut up": 2, "you're ugly": 3,
             "you are ugly": 3, "you're stupid": 2, "you are stupid": 2,
@@ -53,7 +62,7 @@ _SIGNALS: Dict[str, Dict] = {
             (r"\b(?:kill|hurt|destroy|end)\s+(?:you|him|her|them)\b", "threat language", 3),
         ],
     },
-    "Hate Speech": {
+    "Hateful Conduct": {
         "keywords": {
             "white power": 3, "white supremacy": 3, "kill all": 4,
             "exterminate": 4, "heil": 3, "race war": 4, "racial purity": 4,
@@ -64,7 +73,7 @@ _SIGNALS: Dict[str, Dict] = {
             (r"\b(?:hate|attack|ban)\s+[a-z\s]{0,20}\b(?:race|religion|gender|group)", "identity-targeted hostility", 3),
         ],
     },
-    "Impersonation Risk": {
+    "Impersonation": {
         "keywords": {
             "official only": 2, "only official": 2, "official page": 2,
             "fake account": 3, "real account": 1, "verified": 1, "legit": 1,
@@ -74,15 +83,19 @@ _SIGNALS: Dict[str, Dict] = {
         },
         "patterns": [],
     },
-    "General Policy Risk": {
+    "Fraud / Scams / Deceptive Practices": {
         "keywords": {
-            "buy followers": 3, "buy likes": 3, "sell drugs": 4,
-            "drugs for sale": 4, "weapons for sale": 4, "firearms": 2,
             "hacking service": 3, "hack instagram": 3, "hacked account": 2,
             "fraud": 2, "scam": 3, "identity theft": 3, "stolen": 2,
             "fake id": 3, "counterfeit": 3, "lottery": 2, "inheritance": 1,
-            "adult content": 2, "onlyfans": 1, "cracked": 2,
             "free vbucks": 3, "free robux": 3,
+        },
+        "patterns": [],
+    },
+    "Restricted Goods & Services": {
+        "keywords": {
+            "sell drugs": 4, "drugs for sale": 4, "weapons for sale": 4,
+            "firearms": 2,
         },
         "patterns": [],
     },
@@ -106,6 +119,9 @@ _CLASS_VALUE = {
 }
 def _rule_based_analysis(content_data: str, category: str) -> AnalysisResult:
     """Run the built-in offline signals engine for one category."""
+    # Route the category through the centralized taxonomy first so legacy
+    # names can never surface inconsistent labels in fallback output.
+    category = normalize_category_name(category)
     content = (content_data or "").strip()
     if not content:
         return AnalysisResult(
@@ -265,86 +281,6 @@ class LocalAIProvider(AIProvider):
 
     def generate_summary(self, profile: InstagramProfile, analyses: List[AnalysisResult]) -> dict:
         return _rule_based_summary(profile, analyses)
-class MlAIProvider(AIProvider):
-    """Optional local ML provider (transformers). Falls back to the built-in
-    engine when the ML backend is unavailable (e.g. not installed)."""
-
-    def __init__(self) -> None:
-        self._local = LocalAIProvider()
-        self._classifier = None
-        self._error: str | None = None
-        try:
-            from transformers import pipeline  # type: ignore
-            self._classifier = pipeline(
-                "zero-shot-classification",
-                model="facebook/bart-large-mnli",
-            )
-        except Exception as exc:  # pragma: no cover - depends on local env
-            self._error = f"ML backend unavailable: {exc}"
-
-    def analyze_text(self, content_data: str, category: str) -> AnalysisResult:
-        if self._classifier is None or not (content_data or "").strip():
-            return self._local.analyze_text(content_data, category)
-        try:
-            return self._local.analyze_text(content_data, category)
-        except Exception:  # pragma: no cover - defensive
-            return self._local.analyze_text(content_data, category)
-
-    def generate_summary(self, profile: InstagramProfile, analyses: List[AnalysisResult]) -> dict:
-        return self._local.generate_summary(profile, analyses)
-
-
-class GeminiAIProvider(AIProvider):
-    """Optional Google Gemini provider — requires GOOGLE_API_KEY."""
-
-    PROMPT_TEMPLATE = (
-        "You are an analysis assistant that evaluates publicly accessible "
-        "Instagram content. For the category '{category}', classify the "
-        "content below as one of: No Clear Violation, Low Risk, Potential "
-        "Risk, or High Risk. Reply with exactly one line of JSON:\n"
-        '{{"classification": ..., "severity": ..., "confidence": 0-1, '
-        '"evidence": "short quote", "explanation": "one sentence"}}\n\n'
-        "Content:\n{content}"
-    )
-
-    def __init__(self, api_key: str) -> None:
-        import google.generativeai as genai  # type: ignore
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel("gemini-1.5-flash")
-
-    def analyze_text(self, content_data: str, category: str) -> AnalysisResult:
-        if not (content_data or "").strip():
-            return LocalAIProvider().analyze_text(content_data, category)
-        try:
-            response = self.model.generate_content(
-                self.PROMPT_TEMPLATE.format(
-                    category=category, content=content_data[:4000]
-                )
-            )
-            parsed = _parse_provider_json(response.text, category)
-            return AnalysisResult(**parsed)
-        except Exception:
-            # Deterministic fallback keeps the pipeline usable.
-            return LocalAIProvider().analyze_text(content_data, category)
-
-    def generate_summary(self, profile: InstagramProfile, analyses: List[AnalysisResult]) -> dict:
-        return _rule_based_summary(profile, analyses)
-
-
-def _parse_provider_json(text: str, category: str) -> dict:
-    """Tolerant JSON extraction from a model reply."""
-    import json
-
-    match = re.search(r"\{.*\}", text or "", re.DOTALL)
-    data = json.loads(match.group(0)) if match else {}
-    return {
-        "category": category,
-        "classification": str(data.get("classification", "No Clear Violation")),
-        "severity": str(data.get("severity", "Low")),
-        "confidence": float(data.get("confidence", 0.7)),
-        "evidence": str(data.get("evidence", "Unavailable"))[:200],
-        "explanation": str(data.get("explanation", "Analyzed by Gemini."))[:400],
-    }
 
 
 def get_provider() -> AIProvider:
@@ -357,22 +293,7 @@ def get_provider() -> AIProvider:
 
     if provider_type == "ollama":
         from .ollama import OllamaAIProvider
+
         return OllamaAIProvider()
-
-    if provider_type == "gemini":
-        key = os.getenv("GOOGLE_API_KEY", "").strip()
-        if not key:
-            raise ValueError(
-                "AI_PROVIDER=gemini requires GOOGLE_API_KEY set in your .env file."
-            )
-        try:
-            return GeminiAIProvider(key)
-        except ImportError as exc:
-            raise ValueError(
-                "google-generativeai is not installed. Run: pip install .[gemini]"
-            ) from exc
-
-    if provider_type in ("ml", "local_ml"):
-        return MlAIProvider()
 
     return LocalAIProvider()

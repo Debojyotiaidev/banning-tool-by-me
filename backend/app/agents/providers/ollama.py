@@ -40,7 +40,10 @@ class OllamaResponseError(OllamaError):
 
 
 DEFAULT_BASE_URL = "http://127.0.0.1:11434"
-DEFAULT_MODEL = "llama3.1"
+# Default model is intentionally lightweight so the app runs comfortably on
+# typical 8 GB RAM machines. Override via OLLAMA_MODEL in .env if you want a
+# larger model (e.g. llama3.1:8b on machines with 16 GB+ RAM).
+DEFAULT_MODEL = "llama3.2:3b"
 
 
 class OllamaAIProvider:

@@ -8,11 +8,6 @@ instaloader>=4.9.0
 httpx>=0.24.0
 
 # Optional extras (see README):
-#   pip install -e ".[gemini]"   -> Google Gemini provider
-#   pip install -e ".[ml]"       -> local transformers ML provider
 #   pip install -e ".[dev]"      -> test tooling
-google-generativeai>=0.7.0 ; extra == "gemini"
-transformers>=4.40.0 ; extra == "ml"
-torch>=2.2.0 ; extra == "ml"
 pytest>=7.4.0 ; extra == "dev"
 

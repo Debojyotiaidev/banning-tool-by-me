@@ -38,11 +38,11 @@ def _load_env() -> None:
 _load_env()
 
 app = FastAPI(
-    title="Sonics — Instagram AI Account Analyzer & Enforcement Prediction Simulator",
+    title="Sonics — Instagram AI Policy & Evidence Analyzer",
     description=(
-        "Read-only Instagram profile/content analysis with a hypothetical "
-        "enforcement prediction simulator. Does not submit reports or affect "
-        "Instagram enforcement."
+        "Read-only Instagram profile/content analysis producing evidence-confidence "
+        "policy assessments. Does not submit reports, ban accounts, or predict "
+        "enforcement outcomes."
     ),
     version="1.0.0",
 )

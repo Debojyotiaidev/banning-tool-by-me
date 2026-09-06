@@ -348,8 +348,16 @@ def _parse_provider_json(text: str, category: str) -> dict:
 
 
 def get_provider() -> AIProvider:
-    """Select the AI provider from the ``AI_PROVIDER`` environment variable."""
-    provider_type = os.getenv("AI_PROVIDER", "local").lower().strip()
+    """Select the AI provider from the ``AI_PROVIDER`` environment variable.
+
+    Default is ``ollama`` -- a local LLM served via the Ollama HTTP API.
+    ``local`` selects the deterministic offline rules engine.
+    """
+    provider_type = os.getenv("AI_PROVIDER", "ollama").lower().strip()
+
+    if provider_type == "ollama":
+        from .ollama import OllamaAIProvider
+        return OllamaAIProvider()
 
     if provider_type == "gemini":
         key = os.getenv("GOOGLE_API_KEY", "").strip()
